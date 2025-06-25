@@ -1,6 +1,7 @@
 package com.erarslan.patient_service.service;
 
 import com.erarslan.patient_service.exception.PatientNotFoundByIdException;
+import com.erarslan.patient_service.grpc.BillingServiceGrpcClient;
 import com.erarslan.patient_service.mapper.PatientMapper;
 import com.erarslan.patient_service.model.dto.CreatePatientRequestDTO;
 import com.erarslan.patient_service.model.dto.PatientResponseDTO;
@@ -8,6 +9,9 @@ import com.erarslan.patient_service.model.dto.UpdatePatientRequestDto;
 import com.erarslan.patient_service.model.entity.Patient;
 import com.erarslan.patient_service.repository.PatientRepository;
 import com.erarslan.patient_service.rules.PatientBusinessRules;
+
+import billing.BillingResponse;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -20,6 +24,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 class PatientServiceTest {
@@ -32,6 +38,9 @@ class PatientServiceTest {
 
     @Mock
     private PatientBusinessRules patientBusinessRules;
+
+    @Mock
+    private BillingServiceGrpcClient billingServiceGrpcClient;
 
     @InjectMocks
     private PatientService patientService;
@@ -114,10 +123,16 @@ class PatientServiceTest {
         Patient patient = new Patient();
         Patient savedPatient = new Patient();
         PatientResponseDTO responseDTO = new PatientResponseDTO();
+        BillingResponse billingResponse = BillingResponse.newBuilder()
+            .setAccountId("mock-id")
+            .setStatus("CREATED")
+            .build();
 
         when(patientMapper.createDtoToEntity(createPatientRequestDTO)).thenReturn(patient);
         when(patientRepository.save(patient)).thenReturn(savedPatient);
         when(patientMapper.toResponseDTO(savedPatient)).thenReturn(responseDTO);
+        when(billingServiceGrpcClient.createBillingAccount(anyString(), anyString(), anyString()))
+            .thenReturn(billingResponse);
 
         // Act
         PatientResponseDTO result = patientService.createPatient(createPatientRequestDTO);

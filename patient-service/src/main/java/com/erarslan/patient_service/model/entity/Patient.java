@@ -40,5 +40,5 @@ public class Patient {
     private LocalDate dateOfBirth;
 
     @NotNull
-    private LocalDate registeredDate;
+    private LocalDate registeredDate = LocalDate.now();
 }

@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  billing-service:
+    build:
+      context: ./billing-service
+      dockerfile: Dockerfile
+    container_name: billing-service-container
+    ports:
+      - "4001:4001"
+      - "9001:9001"
+    networks:
+      - patient-app-nw
+    environment:
+      - SPRING_GRPC_SERVER_REFLECTION_ENABLED=true
+      - SPRING_GRPC_SERVER_PORT=9001
+
+  patient-service:
+    build:
+      context: ./patient-service
+      dockerfile: Dockerfile
+    container_name: patient-service-container
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/patient-service-db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_SQL_INIT_MODE=always
+      - BILLING_SERVICE_ADDRESS=billing-service-container
+      - BILLING_SERVICE_GRPC_PORT=9001
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+    ports:
+      - "4000:4000"
+    networks:
+      - patient-app-nw
+
+networks:
+  patient-app-nw:
+    external: true
