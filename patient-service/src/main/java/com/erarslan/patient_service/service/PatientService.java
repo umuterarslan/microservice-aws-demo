@@ -47,7 +47,7 @@ public class PatientService {
         PatientResponseDTO patientResponseDTO = patientMapper.toResponseDTO(patient);
 
         billingServiceGrpcClient.createBillingAccount(
-                patientResponseDTO.getId().toString(),
+                patientResponseDTO.getId(),
                 patientResponseDTO.getName(),
                 patientResponseDTO.getEmail());
 

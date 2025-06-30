@@ -3,10 +3,8 @@ package com.erarslan.patient_service.kafka;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.erarslan.patient_service.constants.EventConstants;
-import com.erarslan.patient_service.grpc.BillingServiceGrpcClient;
 import com.erarslan.patient_service.model.entity.Patient;
 
 import lombok.AllArgsConstructor;
@@ -16,7 +14,7 @@ import patient.event.PatientEvent;
 @AllArgsConstructor
 public class KafkaProducer {
 
-    Logger logger = LoggerFactory.getLogger(KafkaProducer.class);
+    private final Logger logger = org.slf4j.LoggerFactory.getLogger(KafkaProducer.class);
 
     private final KafkaTemplate<String, byte[]> kafkaTemplate;
 

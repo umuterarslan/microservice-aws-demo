@@ -2,6 +2,7 @@ package com.erarslan.patient_service.service;
 
 import com.erarslan.patient_service.exception.PatientNotFoundByIdException;
 import com.erarslan.patient_service.grpc.BillingServiceGrpcClient;
+import com.erarslan.patient_service.kafka.KafkaProducer;
 import com.erarslan.patient_service.mapper.PatientMapper;
 import com.erarslan.patient_service.model.dto.CreatePatientRequestDTO;
 import com.erarslan.patient_service.model.dto.PatientResponseDTO;
@@ -41,6 +42,9 @@ class PatientServiceTest {
 
     @Mock
     private BillingServiceGrpcClient billingServiceGrpcClient;
+
+    @Mock
+    private KafkaProducer kafkaProducer;
 
     @InjectMocks
     private PatientService patientService;
@@ -120,9 +124,14 @@ class PatientServiceTest {
                 "Test Address",
                 "01/01/1990"
         );
+
         Patient patient = new Patient();
         Patient savedPatient = new Patient();
+        savedPatient.setId(UUID.randomUUID());
+
         PatientResponseDTO responseDTO = new PatientResponseDTO();
+        responseDTO.setId(UUID.randomUUID().toString());
+
         BillingResponse billingResponse = BillingResponse.newBuilder()
             .setAccountId("mock-id")
             .setStatus("CREATED")
@@ -133,6 +142,7 @@ class PatientServiceTest {
         when(patientMapper.toResponseDTO(savedPatient)).thenReturn(responseDTO);
         when(billingServiceGrpcClient.createBillingAccount(anyString(), anyString(), anyString()))
             .thenReturn(billingResponse);
+        doNothing().when(kafkaProducer).sendEvent(any(Patient.class));
 
         // Act
         PatientResponseDTO result = patientService.createPatient(createPatientRequestDTO);
